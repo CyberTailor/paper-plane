@@ -291,6 +291,11 @@ messagebubble.document .file.with-thumbnail:active > overlay > picture {
   filter: brightness(1.08);
 }
 
+messagelocation messagemap {
+  margin: 2px;
+  border-radius: 10px;
+}
+
 messagebubble.media.with-label mediapicture {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
