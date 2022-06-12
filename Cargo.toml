@@ -21,6 +21,7 @@ qrcode-generator = { version = "4", default-features = false }
 regex = "1"
 rlt = { package = "gtk-rlottie", git = "https://github.com/YuraIz/gtk-rlottie-rs" }
 tdlib = { version = "0.7", default-features = false }
+shumate = { version = "0.3.0", package = "libshumate" }
 temp-dir = "0.1"
 thiserror = "1"
 

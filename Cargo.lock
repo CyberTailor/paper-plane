@@ -893,6 +893,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "libshumate"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f835052474118c10cfa5583e2d531a262ad7ea0909ae1a8a4e94b5d6d472078"
+dependencies = [
+ "gdk-pixbuf",
+ "gdk4",
+ "gio",
+ "glib",
+ "gtk4",
+ "libc",
+ "libshumate-sys",
+ "once_cell",
+]
+
+[[package]]
+name = "libshumate-sys"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61ab625df72e11d45d52793e388b5052ab2af7945d8a4d469f427a568f9a29bb"
+dependencies = [
+ "gdk-pixbuf-sys",
+ "gdk4-sys",
+ "gio-sys",
+ "glib-sys",
+ "gobject-sys",
+ "gtk4-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1071,6 +1103,7 @@ dependencies = [
  "image",
  "indexmap",
  "libadwaita",
+ "libshumate",
  "locale_config",
  "log",
  "once_cell",
