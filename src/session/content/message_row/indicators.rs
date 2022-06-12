@@ -8,6 +8,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use once_cell::sync::Lazy;
 use once_cell::unsync::OnceCell;
+use tdlib::enums::MessageContent;
 use tdlib::enums::MessageSendingState;
 
 use crate::tdlib::Chat;
@@ -268,7 +269,9 @@ impl MessageIndicators {
                 .and_then(|t| t.format(&gettext("%l:%M %p")))
                 .unwrap();
 
-            if message.is_edited() {
+            if message.is_edited()
+                && !matches!(message.content().0, MessageContent::MessageLocation(_))
+            {
                 format!("{} {}", gettext("edited"), datetime)
             } else {
                 datetime.into()
