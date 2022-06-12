@@ -32,6 +32,7 @@ use self::bubble::MessageBubble;
 use self::document::MessageDocument;
 use self::indicators::MessageIndicators;
 use self::label::MessageLabel;
+use self::location::MessageLocation;
 use self::media_picture::MediaPicture;
 use self::photo::MessagePhoto;
 use self::reply::MessageReply;
@@ -347,6 +348,9 @@ impl MessageRow {
                         |s| matches!(s.format, StickerFormat::Webp | StickerFormat::Tgs)
                     ).unwrap_or_default() => {
                     self.update_specific_content::<_, MessageSticker>(message_.clone());
+                    }
+                MessageContent::MessageLocation(_) => {
+                    self.update_specific_content::<_, MessageLocation>(message_.clone());
                 }
                 MessageContent::MessagePhoto(_) => {
                     self.update_specific_content::<_, MessagePhoto>(message_.clone());
