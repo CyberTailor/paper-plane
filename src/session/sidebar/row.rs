@@ -578,9 +578,9 @@ fn sender_label(message: Message) -> Option<String> {
 
     // Just use a sender label for specific messages.
     match message.content().0 {
-        MessageText(_) | MessageSticker(_) | MessagePhoto(_) | MessageAudio(_)
-        | MessageAnimation(_) | MessageVideo(_) | MessageDocument(_) | MessageVoiceNote(_)
-        | MessageCall(_) => {}
+        MessageText(_) | MessageLocation(_) | MessageSticker(_) | MessagePhoto(_)
+        | MessageAudio(_) | MessageAnimation(_) | MessageVideo(_) | MessageDocument(_)
+        | MessageVoiceNote(_) | MessageCall(_) => {}
         _ => return None,
     }
 
