@@ -171,6 +171,16 @@ messagebubble.outgoing messagereply label.message {
   color: @window_fg_color;
 }
 
+messagebubble messagemap .license {
+  border-radius: 9999px;
+  margin: 3px 3px 0 6px;
+  padding: 1px 6px;
+}
+
+messagebubble messagemap .marker {
+  color: @red_3;
+}
+
 messagebubble messageindicators {
   opacity: 0.7;
 }

@@ -3,6 +3,7 @@ mod bubble;
 mod document;
 mod indicators;
 mod label;
+mod map;
 mod media_picture;
 mod photo;
 mod reply;
