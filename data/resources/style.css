@@ -181,6 +181,10 @@ messagebubble messagemap .marker {
   color: @red_3;
 }
 
+messagebubble avatarmapmarker .hull {
+  color: @accent_bg_color;
+}
+
 messagebubble messageindicators {
   opacity: 0.7;
 }
