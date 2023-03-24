@@ -4,18 +4,15 @@ use std::path::PathBuf;
 use gettextrs::gettext;
 use gtk::gdk;
 use gtk::glib;
+use gtk::traits::WidgetExt;
 use image::io::Reader as ImageReader;
-use locale_config::Locale;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use tdlib::enums::TextEntityType;
 use tdlib::functions;
-use tdlib::types;
 use tdlib::types::FormattedText;
 use thiserror::Error;
 
-use crate::config;
-use crate::session_manager::DatabaseInfo;
 use crate::APPLICATION_OPTS;
 use crate::TEMP_DIR;
 
@@ -166,47 +163,6 @@ pub(crate) fn temp_dir() -> Option<&'static PathBuf> {
     TEMP_DIR.get()
 }
 
-pub(crate) async fn send_tdlib_parameters(
-    client_id: i32,
-    database_info: &DatabaseInfo,
-) -> Result<(), types::Error> {
-    let system_language_code = {
-        let locale = Locale::current().to_string();
-        if !locale.is_empty() {
-            locale
-        } else {
-            "en_US".to_string()
-        }
-    };
-
-    let database_directory = data_dir()
-        .join(&database_info.directory_base_name)
-        .to_str()
-        .expect("Data directory path is not a valid unicode string")
-        .into();
-
-    functions::set_tdlib_parameters(
-        database_info.use_test_dc,
-        database_directory,
-        String::new(),
-        String::new(),
-        true,
-        true,
-        true,
-        true,
-        config::TG_API_ID,
-        config::TG_API_HASH.into(),
-        system_language_code,
-        "Desktop".into(),
-        String::new(),
-        config::VERSION.into(),
-        true,
-        false,
-        client_id,
-    )
-    .await
-}
-
 pub(crate) async fn log_out(client_id: i32) {
     if let Err(e) = functions::log_out(client_id).await {
         log::error!("Could not logout client with id={}: {:?}", client_id, e);
@@ -282,4 +238,28 @@ pub(crate) fn decode_image_from_path(path: &str) -> Result<gdk::MemoryTexture, D
     );
 
     Ok(texture)
+}
+
+pub(crate) fn unparent_children(widget: &gtk::Widget) {
+    let mut child = widget.first_child();
+    while let Some(child_) = child {
+        child = child_.next_sibling();
+        child_.unparent();
+    }
+}
+
+pub(crate) struct ChildIter(Option<gtk::Widget>);
+impl From<&gtk::Widget> for ChildIter {
+    fn from(widget: &gtk::Widget) -> Self {
+        Self(widget.first_child())
+    }
+}
+impl Iterator for ChildIter {
+    type Item = gtk::Widget;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let r = self.0.take();
+        self.0 = r.as_ref().and_then(|widget| widget.next_sibling());
+        r
+    }
 }

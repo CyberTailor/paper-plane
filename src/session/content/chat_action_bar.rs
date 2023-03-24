@@ -122,14 +122,16 @@ mod imp {
                 None,
                 |widget, _, _| async move {
                     let chat = widget.chat().unwrap();
-                    let result = functions::join_chat(chat.id(), chat.session().client_id()).await;
+                    let result =
+                        functions::join_chat(chat.id(), chat.session().client().id()).await;
                     if let Err(e) = result {
                         log::warn!("Failed to join chat: {:?}", e);
                     } else {
-                        // Reset the selection
-                        chat.session().imp().sidebar.set_selected_chat(None);
-                        // Select chat recently joined by the user
-                        chat.session().imp().sidebar.set_selected_chat(Some(chat));
+                        // TODO
+                        // // Reset the selection
+                        // chat.session().imp().sidebar.set_selected_chat(None);
+                        // // Select chat recently joined by the user
+                        // chat.session().imp().sidebar.set_selected_chat(Some(chat));
                     }
                 },
             );
@@ -151,7 +153,7 @@ mod imp {
                         let result = functions::toggle_message_sender_is_blocked(
                             message_sender,
                             !chat.is_blocked(),
-                            chat.session().client_id(),
+                            chat.session().client().id(),
                         )
                         .await;
                         if let Err(e) = result {
@@ -419,7 +421,7 @@ impl ChatActionBar {
 
     fn load_message_to_edit(&self, message_id: i64) {
         if let Some(chat) = self.chat() {
-            let client_id = chat.session().client_id();
+            let client_id = chat.session().client().id();
 
             if let Some(message) = chat.message(message_id) {
                 match message.content().0 {
@@ -503,7 +505,7 @@ impl ChatActionBar {
         if let Some(chat) = self.chat() {
             if let ChatActionBarState::Editing(message_id) = self.imp().state.get() {
                 if let Some(message) = self.compose_text_message().await {
-                    let client_id = chat.session().client_id();
+                    let client_id = chat.session().client().id();
                     let chat_id = chat.id();
 
                     let result =
@@ -521,7 +523,7 @@ impl ChatActionBar {
     async fn send_text_message(&self) {
         if let Some(chat) = self.chat() {
             if let Some(message) = self.compose_text_message().await {
-                let client_id = chat.session().client_id();
+                let client_id = chat.session().client().id();
                 let chat_id = chat.id();
                 let reply_to_message_id =
                     if let ChatActionBarState::Replying(id) = self.imp().state.get() {
@@ -588,7 +590,7 @@ impl ChatActionBar {
         let result = functions::set_chat_notification_settings(
             chat.id(),
             notifications.clone(),
-            chat.session().client_id(),
+            chat.session().client().id(),
         )
         .await;
         if let Err(e) = result {
@@ -598,7 +600,7 @@ impl ChatActionBar {
 
     async fn save_message_as_draft(&self) {
         if let Some(chat) = self.chat() {
-            let client_id = chat.session().client_id();
+            let client_id = chat.session().client().id();
             let chat_id = chat.id();
             let reply_to_message_id =
                 if let ChatActionBarState::Replying(id) = self.imp().state.get() {
@@ -652,7 +654,7 @@ impl ChatActionBar {
         }
 
         if let Some(chat) = self.chat() {
-            let client_id = chat.session().client_id();
+            let client_id = chat.session().client().id();
             let chat_id = chat.id();
 
             // Enable chat action cooldown right away

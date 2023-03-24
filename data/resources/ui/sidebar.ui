@@ -3,6 +3,13 @@
   <menu id="primary_menu">
     <section>
       <item>
+        <attribute name="custom">sessions</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_New Session</attribute>
+        <attribute name="action">session.new</attribute>
+      </item>
+      <item>
         <attribute name="label" translatable="yes">_Log Out</attribute>
         <attribute name="action">session.log-out</attribute>
       </item>
@@ -46,35 +53,15 @@
                     <property name="show-end-title-buttons" bind-source="Sidebar"
                       bind-property="compact" bind-flags="sync-create"/>
                     <child type="start">
-                      <object class="GtkMenuButton">
-                        <property name="popover">
-                          <object class="SessionSwitcher" id="session_switcher"/>
-                        </property>
-                        <style>
-                          <class name="image-button"/>
-                        </style>
-                        <property name="child">
-                          <object class="ComponentsAvatar">
-                            <property name="size">24</property>
-                            <binding name="item">
-                              <lookup name="me" type="Session">
-                                <lookup name="session">Sidebar</lookup>
-                              </lookup>
-                            </binding>
-                          </object>
-                        </property>
-                      </object>
-                    </child>
-                    <child type="end">
-                      <object class="GtkMenuButton">
-                        <property name="icon-name">open-menu-symbolic</property>
-                        <property name="menu-model">primary_menu</property>
-                      </object>
-                    </child>
-                    <child type="end">
                       <object class="GtkButton">
                         <property name="action-name">sidebar.start-search</property>
                         <property name="icon-name">system-search-symbolic</property>
+                      </object>
+                    </child>
+                    <child type="end">
+                      <object class="GtkMenuButton" id="menu_button">
+                        <property name="icon-name">open-menu-symbolic</property>
+                        <property name="menu-model">primary_menu</property>
                       </object>
                     </child>
                   </object>
@@ -135,6 +122,9 @@
               bind-flags="sync-create"/>
             <property name="session" bind-source="Sidebar" bind-property="session"
               bind-flags="sync-create"/>
+            <!-- <binding name="session">
+                <lookup name="session">Sidebar</lookup>
+            </binding> -->
             <signal name="close" handler="close_search" swapped="true"/>
           </object>
         </child>

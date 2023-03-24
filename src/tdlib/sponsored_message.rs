@@ -12,7 +12,7 @@ use tdlib::types::Error as TdError;
 
 use crate::tdlib::BoxedMessageContent;
 use crate::tdlib::Chat;
-use crate::Session;
+use crate::tdlib::ClientSession;
 
 mod imp {
     use super::*;
@@ -66,9 +66,12 @@ glib::wrapper! {
 }
 
 impl SponsoredMessage {
-    pub(crate) async fn request(chat_id: i64, session: &Session) -> Result<Option<Self>, TdError> {
+    pub(crate) async fn request(
+        chat_id: i64,
+        session: &ClientSession,
+    ) -> Result<Option<Self>, TdError> {
         let enums::SponsoredMessages::SponsoredMessages(td_sponsored_messages) =
-            functions::get_chat_sponsored_messages(chat_id, session.client_id()).await?;
+            functions::get_chat_sponsored_messages(chat_id, session.client().id()).await?;
 
         // TODO: Support multiple sponsored messages
         if let Some(td_sponsored_message) = td_sponsored_messages.messages.first() {

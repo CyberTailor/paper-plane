@@ -9,7 +9,7 @@ use gtk::glib;
 use tdlib::enums::StickerFormat;
 use tdlib::types::Sticker as TdSticker;
 
-use crate::session::Session;
+use crate::tdlib::ClientSession;
 use crate::utils::decode_image_from_path;
 use crate::utils::spawn;
 
@@ -98,7 +98,7 @@ glib::wrapper! {
 }
 
 impl Sticker {
-    pub(crate) fn update_sticker(&self, sticker: TdSticker, looped: bool, session: Session) {
+    pub(crate) fn update_sticker(&self, sticker: TdSticker, looped: bool, session: ClientSession) {
         let imp = self.imp();
 
         let file_id = sticker.sticker.id;
@@ -136,7 +136,7 @@ impl Sticker {
     async fn download_sticker(
         &self,
         file_id: i32,
-        session: &Session,
+        session: &ClientSession,
         looped: bool,
         format: StickerFormat,
     ) {

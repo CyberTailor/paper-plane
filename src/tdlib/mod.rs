@@ -5,6 +5,8 @@ mod chat_action;
 mod chat_action_list;
 mod chat_list;
 mod chat_list_item;
+mod client;
+mod client_manager;
 mod country_info;
 mod country_list;
 mod message;
@@ -21,6 +23,10 @@ use tdlib::enums::MessageContent;
 use tdlib::enums::MessageSendingState;
 use tdlib::enums::UserStatus;
 use tdlib::enums::UserType;
+use tdlib::types::AuthorizationStateWaitCode;
+use tdlib::types::AuthorizationStateWaitOtherDeviceConfirmation;
+use tdlib::types::AuthorizationStateWaitPassword;
+use tdlib::types::AuthorizationStateWaitRegistration;
 use tdlib::types::ChatNotificationSettings;
 use tdlib::types::ChatPermissions;
 use tdlib::types::DraftMessage;
@@ -35,6 +41,19 @@ pub(crate) use self::chat_action::ChatAction;
 pub(crate) use self::chat_action_list::ChatActionList;
 pub(crate) use self::chat_list::ChatList;
 pub(crate) use self::chat_list_item::ChatListItem;
+pub(crate) use self::client::Client;
+pub(crate) use self::client::ClientAuth;
+pub(crate) use self::client::ClientAuthWaitCode;
+pub(crate) use self::client::ClientAuthWaitOtherDeviceConfirmation;
+pub(crate) use self::client::ClientAuthWaitPassword;
+pub(crate) use self::client::ClientAuthWaitPhoneNumber;
+pub(crate) use self::client::ClientAuthWaitRegistration;
+pub(crate) use self::client::ClientLoggingOut;
+pub(crate) use self::client::ClientSession;
+pub(crate) use self::client::DatabaseInfo;
+pub(crate) use self::client::SendPasswordRecoveryCodeResult;
+pub(crate) use self::client::SendPhoneNumberResult;
+pub(crate) use self::client_manager::ClientManager;
 pub(crate) use self::country_info::CountryInfo;
 pub(crate) use self::country_list::CountryList;
 pub(crate) use self::message::Message;
@@ -47,6 +66,30 @@ pub(crate) use self::secret_chat::SecretChatState;
 pub(crate) use self::sponsored_message::SponsoredMessage;
 pub(crate) use self::supergroup::Supergroup;
 pub(crate) use self::user::User;
+
+#[derive(Clone, Debug, glib::Boxed)]
+#[boxed_type(name = "BoxedAuthorizationStateWaitOtherDeviceConfirmation", nullable)]
+pub(crate) struct BoxedAuthorizationStateWaitOtherDeviceConfirmation(
+    pub(crate) AuthorizationStateWaitOtherDeviceConfirmation,
+);
+
+#[derive(Clone, Debug, glib::Boxed)]
+#[boxed_type(name = "BoxedAuthorizationStateWaitCode", nullable)]
+pub(crate) struct BoxedAuthorizationStateWaitCode(pub(crate) AuthorizationStateWaitCode);
+
+#[derive(Clone, Debug, glib::Boxed)]
+#[boxed_type(name = "BoxedAuthorizationStateWaitRegistration", nullable)]
+pub(crate) struct BoxedAuthorizationStateWaitRegistration(
+    pub(crate) AuthorizationStateWaitRegistration,
+);
+
+#[derive(Clone, Debug, glib::Boxed)]
+#[boxed_type(name = "BoxedAuthorizationStateWaitPassword", nullable)]
+pub(crate) struct BoxedAuthorizationStateWaitPassword(pub(crate) AuthorizationStateWaitPassword);
+
+#[derive(Clone, Debug, glib::Boxed)]
+#[boxed_type(name = "BoxedDatabaseInfo", nullable)]
+pub(crate) struct BoxedDatabaseInfo(pub(crate) DatabaseInfo);
 
 #[derive(Clone, Debug, PartialEq, glib::Boxed)]
 #[boxed_type(name = "BoxedChatMemberStatus")]

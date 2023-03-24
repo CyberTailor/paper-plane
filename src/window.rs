@@ -15,7 +15,6 @@ use tdlib::types;
 
 use crate::config::APP_ID;
 use crate::config::PROFILE;
-use crate::session_manager::ClientState;
 use crate::session_manager::SessionManager;
 use crate::strings;
 use crate::tdlib::ChatType;
@@ -188,12 +187,14 @@ impl Window {
         client_id: i32,
         chat_id: i64,
     ) {
-        let client = self.imp().session_manager.client(client_id);
-        if let Some(ref client) =
-            client.filter(|client| matches!(client.state, ClientState::LoggedIn))
+        if let Some(ref session) = self
+            .imp()
+            .session_manager
+            .client_manager()
+            .session(client_id)
         {
             let app = self.application().unwrap();
-            let chat = client.session.chat(chat_id);
+            let chat = session.chat(chat_id);
 
             for notification in notifications {
                 let notification_id = notification.id;
@@ -250,7 +251,6 @@ impl Window {
                             );
 
                             let file_id = avatar_file.id;
-                            let session = &client.session;
                             spawn(
                                 clone!(@weak self as obj, @weak session, @weak app => async move {
                                     match session.download_file(file_id).await {

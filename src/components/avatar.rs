@@ -12,9 +12,9 @@ use gtk::CompositeTemplate;
 use crate::expressions;
 use crate::tdlib::Avatar as AvatarItem;
 use crate::tdlib::Chat;
+use crate::tdlib::ClientSession;
 use crate::tdlib::User;
 use crate::utils::spawn;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -157,7 +157,7 @@ impl Avatar {
             .bind(&*imp.avatar, "show-initials", Some(self));
     }
 
-    fn load_image(&self, avatar_item: Option<AvatarItem>, session: Session) {
+    fn load_image(&self, avatar_item: Option<AvatarItem>, session: ClientSession) {
         if let Some(avatar_item) = avatar_item {
             let file = avatar_item.0;
             if file.local.is_downloading_completed {
@@ -175,7 +175,7 @@ impl Avatar {
         }
     }
 
-    async fn download_avatar(&self, file_id: i32, session: &Session) {
+    async fn download_avatar(&self, file_id: i32, session: &ClientSession) {
         match session.download_file(file_id).await {
             Ok(file) => {
                 let texture = gdk::Texture::from_filename(file.local.path).unwrap();

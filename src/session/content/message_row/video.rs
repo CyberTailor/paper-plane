@@ -15,6 +15,7 @@ use crate::session::content::message_row::MediaPicture;
 use crate::session::content::message_row::MessageBase;
 use crate::session::content::message_row::MessageBaseImpl;
 use crate::session::content::message_row::MessageBubble;
+use crate::tdlib::ClientSession;
 use crate::tdlib::Message;
 use crate::utils::parse_formatted_text;
 use crate::utils::spawn;
@@ -138,7 +139,7 @@ impl MessageBaseExt for MessageVideo {
 }
 
 impl MessageVideo {
-    fn update_content(&self, content: MessageContent, session: &Session) {
+    fn update_content(&self, content: MessageContent, session: &ClientSession) {
         let imp = self.imp();
 
         let (caption, file, aspect_ratio, minithumbnail) =
@@ -190,7 +191,7 @@ impl MessageVideo {
         }
     }
 
-    async fn download_video(&self, file_id: i32, session: &Session) {
+    async fn download_video(&self, file_id: i32, session: &ClientSession) {
         match session.download_file(file_id).await {
             Ok(file) => {
                 self.load_video(&file.local.path);

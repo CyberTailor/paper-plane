@@ -175,7 +175,7 @@ impl PreferencesWindow {
     }
 
     async fn calculate_cache_size(&self) {
-        let client_id = self.session().client_id();
+        let client_id = self.session().model().unwrap().client().id();
         match tdlib::functions::get_storage_statistics(0, client_id).await {
             Ok(tdlib::enums::StorageStatistics::StorageStatistics(data)) => {
                 let size = glib::format_size(data.size as u64);
@@ -188,7 +188,7 @@ impl PreferencesWindow {
     }
 
     async fn clear_cache(&self) {
-        let client_id = self.session().client_id();
+        let client_id = self.session().model().unwrap().client().id();
         match tdlib::functions::optimize_storage(
             0,
             0,

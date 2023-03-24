@@ -167,7 +167,7 @@ impl ChatInfoWindow {
     }
 
     fn setup_basic_group_info(&self, basic_group: &BasicGroup) {
-        let client_id = self.chat().unwrap().session().client_id();
+        let client_id = self.chat().unwrap().session().client().id();
         let basic_group_id = basic_group.id();
         let imp = self.imp();
 
@@ -213,7 +213,7 @@ impl ChatInfoWindow {
     }
 
     fn setup_supergroup_info(&self, supergroup: &Supergroup) {
-        let client_id = self.chat().unwrap().session().client_id();
+        let client_id = self.chat().unwrap().session().client().id();
         let supergroup_id = supergroup.id();
         let imp = self.imp();
 

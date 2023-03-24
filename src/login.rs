@@ -24,7 +24,6 @@ use crate::session_manager::SessionManager;
 use crate::tdlib::CountryList;
 use crate::utils::log_out;
 use crate::utils::parse_formatted_text;
-use crate::utils::send_tdlib_parameters;
 use crate::utils::spawn;
 
 mod imp {
@@ -236,23 +235,23 @@ impl Login {
 
         match state {
             AuthorizationState::WaitTdlibParameters => {
-                let client_id = imp.client_id.get();
-                let database_info = imp
-                    .session
-                    .borrow()
-                    .as_ref()
-                    .unwrap()
-                    .database_info()
-                    .0
-                    .clone();
+                // let client_id = imp.client_id.get();
+                // let database_info = imp
+                //     .session
+                //     .borrow()
+                //     .as_ref()
+                //     .unwrap()
+                //     .database_info()
+                //     .0
+                //     .clone();
 
-                spawn(clone!(@weak self as obj => async move {
-                    let result = send_tdlib_parameters(client_id, &database_info).await;
+                // spawn(clone!(@weak self as obj => async move {
+                //     // let result = send_tdlib_parameters(client_id, &database_info).await;
 
-                    if let Err(err) = result {
-                        show_error_label(&obj.imp().welcome_page_error_label, &err.message);
-                    }
-                }));
+                //     // if let Err(err) = result {
+                //     //     show_error_label(&obj.imp().welcome_page_error_label, &err.message);
+                //     // }
+                // }));
             }
             AuthorizationState::WaitPhoneNumber => {
                 if !imp.countries_retrieved.get() {
@@ -416,14 +415,14 @@ impl Login {
                 // Clear the qr code image save some potential memory.
                 imp.qr_code_image.set_paintable(gdk::Paintable::NONE);
 
-                spawn(clone!(@weak self as obj => async move {
-                    let imp = obj.imp();
-                    imp.session_manager.get().unwrap().add_logged_in_session(
-                        imp.client_id.get(),
-                        imp.session.take().unwrap(),
-                        true,
-                    ).await;
-                }));
+                // spawn(clone!(@weak self as obj => async move {
+                //     let imp = obj.imp();
+                //     imp.session_manager.get().unwrap().add_logged_in_session(
+                //         imp.client_id.get(),
+                //         imp.session.take().unwrap(),
+                //         true,
+                //     ).await;
+                // }));
 
                 // Make everything invisible.
                 imp.toolbar_view.set_visible(false);
@@ -527,12 +526,13 @@ impl Login {
 
         let visible_page = imp.content.visible_child_name().unwrap();
 
-        let is_previous_valid = imp
-            .session_manager
-            .get()
-            .map(|session_manager| session_manager.sessions().n_items() > 0)
-            .unwrap_or_default()
-            || visible_page.as_str() != "phone-number-page";
+        let is_previous_valid = false;
+        // imp
+        //     .session_manager
+        //     .get()
+        //     .map(|session_manager| session_manager.sessions().n_items() > 0)
+        //     .unwrap_or_default()
+        //     || visible_page.as_str() != "phone-number-page";
 
         let is_next_valid = visible_page.as_str() != "password-forgot-page"
             && visible_page.as_str() != "qr-code-page";
@@ -583,7 +583,7 @@ impl Login {
 
                 // Logout the client when login is aborted.
                 log_out(imp.client_id.get()).await;
-                imp.session_manager.get().unwrap().switch_to_sessions(None);
+                // imp.session_manager.get().unwrap().switch_to_sessions(None);
             }
             "qr-code-page" => self.leave_qr_code_page().await,
             "password-forgot-page" => self.navigate_to_page::<gtk::Editable, _, _>(
@@ -637,41 +637,41 @@ impl Login {
     }
 
     async fn request_qr_code(&self) {
-        self.freeze();
+        // self.freeze();
 
-        let imp = self.imp();
-        imp.phone_number_use_qr_code_stack
-            .set_visible_child_name("spinner");
+        // let imp = self.imp();
+        // imp.phone_number_use_qr_code_stack
+        //     .set_visible_child_name("spinner");
 
-        let other_user_ids = imp
-            .session_manager
-            .get()
-            .unwrap()
-            .logged_in_users()
-            .into_iter()
-            .map(|user| user.id())
-            .collect();
-        let client_id = imp.client_id.get();
+        // let other_user_ids = imp
+        //     .session_manager
+        //     .get()
+        //     .unwrap()
+        //     .logged_in_users()
+        //     .into_iter()
+        //     .map(|user| user.id())
+        //     .collect();
+        // let client_id = imp.client_id.get();
 
-        let result = functions::request_qr_code_authentication(other_user_ids, client_id).await;
+        // let result = functions::request_qr_code_authentication(other_user_ids, client_id).await;
 
-        self.handle_user_result(
-            result,
-            &imp.welcome_page_error_label,
-            &*imp.phone_number_input,
-        );
+        // self.handle_user_result(
+        //     result,
+        //     &imp.welcome_page_error_label,
+        //     &*imp.phone_number_input,
+        // );
     }
 
     async fn leave_qr_code_page(&self) {
-        // We actually need to logout to stop tdlib sending us new links.
-        // https://github.com/tdlib/td/issues/1645
-        let imp = self.imp();
+        // // We actually need to logout to stop tdlib sending us new links.
+        // // https://github.com/tdlib/td/issues/1645
+        // let imp = self.imp();
 
-        log_out(imp.client_id.get()).await;
-        imp.session_manager
-            .get()
-            .unwrap()
-            .add_new_session(self.use_test_dc());
+        // log_out(imp.client_id.get()).await;
+        // imp.session_manager
+        //     .get()
+        //     .unwrap()
+        //     .add_new_session(self.use_test_dc());
     }
 
     fn show_tos_dialog(&self, user_needs_to_accept: bool) {
@@ -747,52 +747,52 @@ impl Login {
     }
 
     async fn send_phone_number(&self) {
-        let imp = self.imp();
+        // let imp = self.imp();
 
-        reset_error_label(&imp.welcome_page_error_label);
+        // reset_error_label(&imp.welcome_page_error_label);
 
-        let client_id = imp.client_id.get();
-        let phone_number = imp.phone_number_input.number();
+        // let client_id = imp.client_id.get();
+        // let phone_number = imp.phone_number_input.number();
 
-        // Check if we are already have an account logged in with that phone_number.
-        let phone_number_digits = phone_number
-            .chars()
-            .filter(|c| c.is_ascii_digit())
-            .collect::<String>();
+        // // Check if we are already have an account logged in with that phone_number.
+        // let phone_number_digits = phone_number
+        //     .chars()
+        //     .filter(|c| c.is_ascii_digit())
+        //     .collect::<String>();
 
-        let session_manager = imp.session_manager.get().unwrap();
+        // let session_manager = imp.session_manager.get().unwrap();
 
-        match session_manager.session_index_for(self.use_test_dc(), &phone_number_digits) {
-            Some(pos) => {
-                // We just figured out that we already have an open session for that account.
-                // Therefore we logout the client, with which we wanted to log in and delete its
-                // just created database directory.
-                log_out(imp.client_id.get()).await;
-                imp.session_manager
-                    .get()
-                    .unwrap()
-                    .switch_to_sessions(Some(pos));
-            }
-            None => {
-                let result = functions::set_authentication_phone_number(
-                    phone_number.into(),
-                    Some(types::PhoneNumberAuthenticationSettings {
-                        allow_flash_call: true,
-                        allow_missed_call: true,
-                        ..Default::default()
-                    }),
-                    client_id,
-                )
-                .await;
+        // match session_manager.session_index_for(self.use_test_dc(), &phone_number_digits) {
+        //     Some(pos) => {
+        //         // We just figured out that we already have an open session for that account.
+        //         // Therefore we logout the client, with which we wanted to log in and delete its
+        //         // just created database directory.
+        //         log_out(imp.client_id.get()).await;
+        //         imp.session_manager
+        //             .get()
+        //             .unwrap()
+        //             .switch_to_sessions(Some(pos));
+        //     }
+        //     None => {
+        //         let result = functions::set_authentication_phone_number(
+        //             phone_number.into(),
+        //             Some(types::PhoneNumberAuthenticationSettings {
+        //                 allow_flash_call: true,
+        //                 allow_missed_call: true,
+        //                 ..Default::default()
+        //             }),
+        //             client_id,
+        //         )
+        //         .await;
 
-                self.handle_user_result(
-                    result,
-                    &imp.welcome_page_error_label,
-                    &*imp.phone_number_input,
-                );
-                imp.phone_number_input.select_number_without_calling_code()
-            }
-        }
+        //         self.handle_user_result(
+        //             result,
+        //             &imp.welcome_page_error_label,
+        //             &*imp.phone_number_input,
+        //         );
+        //         imp.phone_number_input.select_number_without_calling_code()
+        //     }
+        // }
     }
 
     async fn send_code(&self) {
@@ -1011,14 +1011,15 @@ impl Login {
     }
 
     fn use_test_dc(&self) -> bool {
-        self.imp()
-            .session
-            .borrow()
-            .as_ref()
-            .unwrap()
-            .database_info()
-            .0
-            .use_test_dc
+        false
+        // self.imp()
+        //     .session
+        //     .borrow()
+        //     .as_ref()
+        //     .unwrap()
+        //     .database_info()
+        //     .0
+        //     .use_test_dc
     }
 
     fn handle_user_result<T, W: IsA<gtk::Widget>>(

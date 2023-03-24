@@ -15,8 +15,8 @@ use super::Sidebar;
 use crate::components::Avatar as ComponentsAvatar;
 use crate::tdlib::BoxedUserStatus;
 use crate::tdlib::Chat;
+use crate::tdlib::ClientSession;
 use crate::tdlib::User;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -152,7 +152,7 @@ impl Avatar {
         let is_online_binding = gtk::ObjectExpression::new(user)
             .chain_property::<User>("status")
             .chain_closure::<bool>(closure!(
-                |_: Session, interlocutor_status: BoxedUserStatus| {
+                |_: ClientSession, interlocutor_status: BoxedUserStatus| {
                     matches!(interlocutor_status.0, UserStatus::Online(_)) && my_id != user_id
                 }
             ))

@@ -23,11 +23,11 @@ use crate::strings;
 use crate::tdlib::Chat;
 use crate::tdlib::ChatListItem;
 use crate::tdlib::ChatType;
+use crate::tdlib::ClientSession;
 use crate::tdlib::Message;
 use crate::tdlib::MessageForwardInfo;
 use crate::tdlib::MessageForwardOrigin;
 use crate::utils::spawn;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -303,7 +303,7 @@ impl Row {
         );
         imp.chat_signal_group.set(chat_signal_group).unwrap();
 
-        let session_signal_group = glib::SignalGroup::new(Session::static_type());
+        let session_signal_group = glib::SignalGroup::new(ClientSession::static_type());
         session_signal_group.connect_notify_local(
             Some("private-chats-notification-settings"),
             clone!(@weak self as obj => move |_, _| {

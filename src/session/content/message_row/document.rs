@@ -15,10 +15,10 @@ use super::base::MessageBaseExt;
 use crate::session::content::message_row::MessageBase;
 use crate::session::content::message_row::MessageBaseImpl;
 use crate::session::content::message_row::MessageBubble;
+use crate::tdlib::ClientSession;
 use crate::tdlib::Message;
 use crate::utils::parse_formatted_text;
 use crate::utils::spawn;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -178,7 +178,7 @@ impl MessageDocument {
         }
     }
 
-    fn update_status(&self, file: File, session: Session) -> FileStatus {
+    fn update_status(&self, file: File, session: ClientSession) -> FileStatus {
         let status = FileStatus::from(&file);
 
         let size = file.size.max(file.expected_size) as u64;
@@ -189,7 +189,7 @@ impl MessageDocument {
         status
     }
 
-    fn update_button(&self, file: File, session: Session, status: &FileStatus) {
+    fn update_button(&self, file: File, session: ClientSession, status: &FileStatus) {
         let imp = self.imp();
         let click = &*imp.click;
         let image = &*imp.file_status_image;

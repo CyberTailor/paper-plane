@@ -174,7 +174,7 @@ impl ContactsWindow {
     async fn fetch_contacts(&self) {
         let session = self.imp().session.get().unwrap();
 
-        match session.fetch_contacts().await {
+        match session.model().unwrap().fetch_contacts().await {
             Ok(users) => {
                 let list = gio::ListStore::new(User::static_type());
                 list.splice(0, 0, &users);

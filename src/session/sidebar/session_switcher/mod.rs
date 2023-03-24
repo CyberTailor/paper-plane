@@ -16,8 +16,9 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use gtk::SelectionModel;
 
-use super::session_switcher::item::ExtraItemObj;
-use super::session_switcher::item::Item as SessionSwitcherItem;
+pub(crate) use super::session_switcher::item::ExtraItemObj;
+pub(crate) use super::session_switcher::item::Item as SessionSwitcherItem;
+pub(crate) use super::session_switcher::session_entry_row::SessionEntryRow;
 use crate::session::Session;
 
 mod imp {
@@ -143,12 +144,13 @@ impl SessionSwitcher {
                 .downcast::<Session>()
                 .unwrap();
 
-            session1
-                .database_info()
-                .0
-                .directory_base_name
-                .cmp(&session2.database_info().0.directory_base_name)
-                .into()
+            gtk::Ordering::Larger
+            // session1
+            //     .database_info()
+            //     .0
+            //     .directory_base_name
+            //     .cmp(&session2.database_info().0.directory_base_name)
+            //     .into()
         });
 
         let sessions_sort_model = gtk::SortListModel::new(Some(sessions), Some(session_sorter));

@@ -131,7 +131,8 @@ impl Application {
             gio::SimpleAction::new("new-login-production-server", None);
         action_new_login_production_server.connect_activate(
             clone!(@weak self as app => move |_, _| {
-                app.main_window().session_manager().add_new_session(false);
+                // TODO
+                // app.main_window().session_manager().add_new_session(false);
             }),
         );
         self.add_action(&action_new_login_production_server);
@@ -139,7 +140,7 @@ impl Application {
         // New login on test server
         let action_new_login_test_server = gio::SimpleAction::new("new-login-test-server", None);
         action_new_login_test_server.connect_activate(clone!(@weak self as app => move |_, _| {
-            app.main_window().session_manager().add_new_session(true);
+            // app.main_window().session_manager().add_new_session(true);
         }));
         self.add_action(&action_new_login_test_server);
     }

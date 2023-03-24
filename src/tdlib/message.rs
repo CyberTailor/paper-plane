@@ -17,11 +17,11 @@ use crate::expressions;
 use crate::tdlib::BoxedMessageContent;
 use crate::tdlib::BoxedMessageSendingState;
 use crate::tdlib::Chat;
+use crate::tdlib::ClientSession;
 use crate::tdlib::MessageForwardInfo;
 use crate::tdlib::MessageForwardOrigin;
 use crate::tdlib::MessageInteractionInfo;
 use crate::tdlib::User;
-use crate::Session;
 
 #[derive(Clone, Debug, glib::Boxed)]
 #[boxed_type(name = "MessageSender")]
@@ -31,7 +31,7 @@ pub(crate) enum MessageSender {
 }
 
 impl MessageSender {
-    pub(crate) fn from_td_object(sender: &TdMessageSender, session: &Session) -> Self {
+    pub(crate) fn from_td_object(sender: &TdMessageSender, session: &ClientSession) -> Self {
         match sender {
             TdMessageSender::User(data) => {
                 let user = session.user(data.user_id);
@@ -221,7 +221,7 @@ impl Message {
             self.chat().id(),
             vec![self.id()],
             revoke,
-            self.chat().session().client_id(),
+            self.chat().session().client().id(),
         )
         .await
     }

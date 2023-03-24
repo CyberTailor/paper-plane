@@ -1,0 +1,54 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LoginRegistration {
+  layout-manager: BoxLayout {
+    orientation: vertical;
+  };
+
+  Adw.StatusPage {
+    icon-name: "contact-new-symbolic";
+    title: _("Register New Account");
+    vexpand: true;
+
+    Adw.Clamp {
+      maximum-size: 300;
+      tightening-threshold: 200;
+      child: Box {
+        orientation: vertical;
+        spacing: 12;
+
+        ListBox {
+          styles ["boxed-list"]
+
+          Adw.EntryRow first_name_entry_row {
+            title: _("First Name");
+          }
+
+          Adw.EntryRow last_name_entry_row {
+            title: _("Last Name");
+          }
+        }
+
+        Label error_label {
+          styles ["error"]
+
+          visible: false;
+        }
+      };
+    }
+  }
+
+  Adw.Clamp {
+    maximum-size: 300;
+    tightening-threshold: 200;
+    child: Label tos_label {
+      ellipsize: middle;
+      justify: center;
+      margin-bottom: 18;
+      use-markup: true;
+      valign: end;
+      label: _("By signing up,\nyou agree to the <a href=\"\">Terms of Service</a>.");
+    };
+  }
+}

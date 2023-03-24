@@ -28,11 +28,11 @@
                 </child>
               </object>
             </child>
-            <child type="overlay">
+            <!-- <child type="overlay">
               <object class="ComponentsSnow" id="snow">
                 <property name="sensitive">False</property>
               </object>
-            </child>
+            </child> -->
           </object>
         </child>
         <property name="content">

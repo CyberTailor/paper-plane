@@ -21,13 +21,13 @@ pub(crate) use self::avatar::Avatar;
 use self::row::Row;
 use self::search::Search;
 use self::selection::Selection;
-use self::session_switcher::SessionSwitcher;
 use crate::components::Avatar as ComponentsAvatar;
 use crate::components::Snow as ComponentsSnow;
 use crate::tdlib::Chat;
 use crate::tdlib::ChatListItem;
+use crate::tdlib::Client;
+use crate::tdlib::ClientSession;
 use crate::utils::spawn;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -38,16 +38,18 @@ mod imp {
         pub(super) compact: Cell<bool>,
         pub(super) selected_chat: RefCell<Option<Chat>>,
         pub(super) marked_as_unread_handler_id: RefCell<Option<glib::SignalHandlerId>>,
-        pub(super) session: RefCell<Option<Session>>,
+        pub(super) session: glib::WeakRef<ClientSession>,
         pub(super) row_menu: OnceCell<gtk::PopoverMenu>,
         #[template_child]
         pub(super) snow: TemplateChild<ComponentsSnow>,
         #[template_child]
+        pub(super) menu_button: TemplateChild<gtk::MenuButton>,
+        #[template_child]
         pub(super) stack: TemplateChild<gtk::Stack>,
         #[template_child]
         pub(super) main_view: TemplateChild<adw::ToolbarView>,
-        #[template_child]
-        pub(super) session_switcher: TemplateChild<SessionSwitcher>,
+        //         #[template_child]
+        //         pub(super) session_switcher: TemplateChild<SessionSwitcher>,
         #[template_child]
         pub(super) selection: TemplateChild<Selection>,
         #[template_child]
@@ -106,7 +108,7 @@ mod imp {
                     glib::ParamSpecObject::builder::<Chat>("selected-chat")
                         .explicit_notify()
                         .build(),
-                    glib::ParamSpecObject::builder::<Session>("session")
+                    glib::ParamSpecObject::builder::<ClientSession>("session")
                         .explicit_notify()
                         .build(),
                 ]
@@ -145,6 +147,10 @@ mod imp {
             }
         }
 
+        fn constructed(&self) {
+            self.parent_constructed();
+        }
+
         fn dispose(&self) {
             self.stack.unparent();
         }
@@ -174,17 +180,7 @@ glib::wrapper! {
         @extends gtk::Widget;
 }
 
-impl Default for Sidebar {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Sidebar {
-    pub(crate) fn new() -> Self {
-        glib::Object::new()
-    }
-
     pub(crate) fn row_menu(&self) -> &gtk::PopoverMenu {
         self.imp().row_menu.get_or_init(|| {
             let menu = gtk::Builder::from_resource("/app/drey/paper-plane/ui/sidebar-row-menu.ui")
@@ -257,31 +253,59 @@ impl Sidebar {
         self.notify("selected-chat");
     }
 
-    pub(crate) fn set_session(&self, session: Option<Session>) {
-        if self.session() == session {
+    pub(crate) fn set_session(&self, session: Option<&ClientSession>) {
+        if self.session().as_ref() == session {
             return;
         }
 
         let imp = self.imp();
 
-        if let Some(ref session) = session {
+        if let Some(session) = session {
+            let model = gtk::FilterListModel::new(
+                session.client().manager(),
+                Some(gtk::CustomFilter::new(|o| {
+                    let t = o.downcast_ref::<Client>().unwrap().state().unwrap();
+                    t.is::<ClientSession>()
+                })),
+            );
+
+            let list_box = gtk::ListBox::default();
+            list_box.bind_model(Some(&model), |o| {
+                let session = o
+                    .downcast_ref::<Client>()
+                    .unwrap()
+                    .state()
+                    .unwrap()
+                    .downcast::<ClientSession>()
+                    .unwrap();
+
+                session_switcher::SessionEntryRow::new(&session, false).upcast()
+            });
+
+            imp.menu_button
+                .popover()
+                .unwrap()
+                .downcast::<gtk::PopoverMenu>()
+                .unwrap()
+                .add_child(&list_box, "sessions");
+
             imp.selection
                 .set_model(Some(session.main_chat_list().clone().upcast()));
         }
 
-        imp.session.replace(session);
+        imp.session.set(session);
         self.notify("session");
     }
 
-    pub(crate) fn session(&self) -> Option<Session> {
-        self.imp().session.borrow().to_owned()
+    pub(crate) fn session(&self) -> Option<ClientSession> {
+        self.imp().session.upgrade()
     }
 
-    pub(crate) fn set_sessions(&self, sessions: gtk::SelectionModel, this_session: &Session) {
-        self.imp()
-            .session_switcher
-            .set_sessions(sessions, this_session);
-    }
+    // pub(crate) fn set_sessions(&self, sessions: gtk::SelectionModel, this_session: &Session) {
+    //     self.imp()
+    //         .session_switcher
+    //         .set_sessions(sessions, this_session);
+    // }
 
     pub(crate) fn connect_chat_selected<F: Fn(&Self) + 'static>(
         &self,

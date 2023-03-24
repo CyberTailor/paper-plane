@@ -4,7 +4,6 @@ mod section;
 mod section_row;
 
 use std::cell::Cell;
-use std::cell::RefCell;
 
 use gettextrs::gettext;
 use glib::clone;
@@ -25,9 +24,9 @@ use self::section::SectionType;
 use self::section_row::SectionRow;
 use crate::session::Sidebar;
 use crate::tdlib::Chat;
+use crate::tdlib::ClientSession;
 use crate::tdlib::User;
 use crate::utils::spawn;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -35,7 +34,7 @@ mod imp {
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/app/drey/paper-plane/ui/sidebar-search.ui")]
     pub(crate) struct Search {
-        pub(super) session: RefCell<Option<Session>>,
+        pub(super) session: glib::WeakRef<ClientSession>,
         pub(super) compact: Cell<bool>,
         #[template_child]
         pub(super) toolbar_view: TemplateChild<adw::ToolbarView>,
@@ -69,7 +68,8 @@ mod imp {
                 None,
                 |widget, _, _| async move {
                     let session = widget.session().unwrap();
-                    if let Err(e) = functions::clear_recently_found_chats(session.client_id()).await
+                    if let Err(e) =
+                        functions::clear_recently_found_chats(session.client().id()).await
                     {
                         log::warn!("Failed to clear recently found chats: {:?}", e);
                     }
@@ -95,7 +95,7 @@ mod imp {
         fn properties() -> &'static [glib::ParamSpec] {
             static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
                 vec![
-                    glib::ParamSpecObject::builder::<Session>("session")
+                    glib::ParamSpecObject::builder::<ClientSession>("session")
                         .explicit_notify()
                         .build(),
                     glib::ParamSpecBoolean::builder("compact")
@@ -160,15 +160,15 @@ impl Search {
         }
     }
 
-    pub(crate) fn session(&self) -> Option<Session> {
-        self.imp().session.borrow().clone()
+    pub(crate) fn session(&self) -> Option<ClientSession> {
+        self.imp().session.upgrade()
     }
 
-    pub(crate) fn set_session(&self, session: Option<Session>) {
-        if self.session() == session {
+    pub(crate) fn set_session(&self, session: Option<&ClientSession>) {
+        if self.session().as_ref() == session {
             return;
         }
-        self.imp().session.replace(session);
+        self.imp().session.set(session);
         self.notify("session");
     }
 
@@ -222,7 +222,7 @@ impl Search {
         }
 
         // Search chats locally (or get the recently found chats if the query is empty)
-        match functions::search_chats(query.clone(), 30, session.client_id()).await {
+        match functions::search_chats(query.clone(), 30, session.client().id()).await {
             Ok(enums::Chats::Chats(mut data)) if !data.chat_ids.is_empty() => {
                 list.append(&Section::new(if query.is_empty() {
                     SectionType::Recent
@@ -261,7 +261,7 @@ impl Search {
         match functions::search_chats_on_server(
             query.clone(),
             MAX_KNOWN_CHATS - found_chat_ids.len() as i32,
-            session.client_id(),
+            session.client().id(),
         )
         .await
         {
@@ -299,7 +299,7 @@ impl Search {
         match functions::search_contacts(
             query.clone(),
             MAX_KNOWN_CHATS - found_chat_ids.len() as i32,
-            session.client_id(),
+            session.client().id(),
         )
         .await
         {
@@ -332,7 +332,7 @@ impl Search {
         }
 
         // Search public chats
-        match functions::search_public_chats(query, session.client_id()).await {
+        match functions::search_public_chats(query, session.client().id()).await {
             Ok(enums::Chats::Chats(data)) if !data.chat_ids.is_empty() => {
                 list.append(&Section::new(SectionType::Global));
 
@@ -370,14 +370,17 @@ impl Search {
         if let Some(chat) = item.downcast_ref::<Chat>() {
             sidebar.select_chat(chat.clone());
 
-            if let Err(e) = functions::add_recently_found_chat(chat.id(), session.client_id()).await
+            if let Err(e) =
+                functions::add_recently_found_chat(chat.id(), session.client().id()).await
             {
                 log::warn!("Failed to add recently found chat: {:?}", e);
             }
         } else if let Some(user) = item.downcast_ref::<User>() {
-            session.select_chat(user.id());
+            // TODO
+            // session.select_chat(chat);
 
-            if let Err(e) = functions::add_recently_found_chat(user.id(), session.client_id()).await
+            if let Err(e) =
+                functions::add_recently_found_chat(user.id(), session.client().id()).await
             {
                 log::warn!("Failed to add recently found chat: {:?}", e);
             }

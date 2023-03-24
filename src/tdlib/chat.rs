@@ -21,11 +21,11 @@ use crate::tdlib::BoxedChatNotificationSettings;
 use crate::tdlib::BoxedChatPermissions;
 use crate::tdlib::BoxedDraftMessage;
 use crate::tdlib::ChatActionList;
+use crate::tdlib::ClientSession;
 use crate::tdlib::Message;
 use crate::tdlib::SecretChat;
 use crate::tdlib::Supergroup;
 use crate::tdlib::User;
-use crate::Session;
 
 #[derive(Clone, Debug, glib::Boxed)]
 #[boxed_type(name = "ChatType")]
@@ -37,7 +37,7 @@ pub(crate) enum ChatType {
 }
 
 impl ChatType {
-    pub(crate) fn from_td_object(_type: &TdChatType, session: &Session) -> Self {
+    pub(crate) fn from_td_object(_type: &TdChatType, session: &ClientSession) -> Self {
         match _type {
             TdChatType::Private(data) => {
                 let user = session.user(data.user_id);
@@ -99,7 +99,7 @@ mod imp {
         pub(super) draft_message: RefCell<Option<BoxedDraftMessage>>,
         pub(super) notification_settings: RefCell<Option<BoxedChatNotificationSettings>>,
         pub(super) actions: OnceCell<ChatActionList>,
-        pub(super) session: WeakRef<Session>,
+        pub(super) session: WeakRef<ClientSession>,
         pub(super) permissions: RefCell<Option<BoxedChatPermissions>>,
         pub(super) messages: RefCell<HashMap<i64, Message>>,
     }
@@ -168,7 +168,7 @@ mod imp {
                     glib::ParamSpecBoxed::builder::<BoxedChatPermissions>("permissions")
                         .read_only()
                         .build(),
-                    glib::ParamSpecObject::builder::<Session>("session")
+                    glib::ParamSpecObject::builder::<ClientSession>("session")
                         .read_only()
                         .build(),
                 ]
@@ -206,7 +206,8 @@ glib::wrapper! {
 }
 
 impl Chat {
-    pub(crate) fn new(td_chat: TelegramChat, session: &Session) -> Self {
+    // TODO: Rename session -> client_session
+    pub(crate) fn new(td_chat: TelegramChat, session: &ClientSession) -> Self {
         let chat: Chat = glib::Object::new();
         let imp = chat.imp();
 
@@ -483,7 +484,7 @@ impl Chat {
             .get_or_init(|| ChatActionList::from(self))
     }
 
-    pub(crate) fn session(&self) -> Session {
+    pub(crate) fn session(&self) -> ClientSession {
         self.imp().session.upgrade().unwrap()
     }
 
@@ -539,7 +540,7 @@ impl Chat {
             return Ok(message);
         }
 
-        let client_id = self.session().client_id();
+        let client_id = self.session().client().id();
         let result = functions::get_message(self.id(), message_id, client_id).await;
 
         result.map(|r| {
@@ -559,7 +560,7 @@ impl Chat {
         from_message_id: i64,
         limit: i32,
     ) -> Result<Vec<Message>, types::Error> {
-        let client_id = self.session().client_id();
+        let client_id = self.session().client().id();
         let result =
             functions::get_chat_history(self.id(), from_message_id, 0, limit, false, client_id)
                 .await;
@@ -588,17 +589,17 @@ impl Chat {
                 vec![message.id()],
                 None,
                 true,
-                self.session().client_id(),
+                self.session().client().id(),
             )
             .await?;
         }
 
-        functions::toggle_chat_is_marked_as_unread(self.id(), false, self.session().client_id())
+        functions::toggle_chat_is_marked_as_unread(self.id(), false, self.session().client().id())
             .await
     }
 
     pub(crate) async fn mark_as_unread(&self) -> Result<(), types::Error> {
-        functions::toggle_chat_is_marked_as_unread(self.id(), true, self.session().client_id())
+        functions::toggle_chat_is_marked_as_unread(self.id(), true, self.session().client().id())
             .await
     }
 }

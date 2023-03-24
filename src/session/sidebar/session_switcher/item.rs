@@ -134,14 +134,15 @@ impl Item {
     }
 
     pub(crate) fn build_widget(&self) -> gtk::Widget {
-        match self {
-            Self::Session(ref session, hinted) => {
-                let session_entry = SessionEntryRow::new(session);
-                session_entry.set_hint(*hinted);
-                session_entry.upcast()
-            }
-            Self::Separator => gtk::Separator::new(gtk::Orientation::Vertical).upcast(),
-            Self::AddAccount => AddAccountRow::new().upcast(),
-        }
+        todo!()
+        // match self {
+        //     Self::Session(ref session, hinted) => {
+        //         let session_entry = SessionEntryRow::new(session);
+        //         session_entry.set_hint(*hinted);
+        //         session_entry.upcast()
+        //     }
+        //     Self::Separator => gtk::Separator::new(gtk::Orientation::Vertical).upcast(),
+        //     Self::AddAccount => AddAccountRow::new().upcast(),
+        // }
     }
 }

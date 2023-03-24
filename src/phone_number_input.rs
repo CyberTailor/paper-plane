@@ -75,7 +75,7 @@ mod imp {
 
             match pspec.name() {
                 "model" => obj.set_model(value.get().unwrap()),
-                "number" => {
+                "number" | "text" => {
                     obj.set_number(&value.get::<Option<String>>().unwrap().unwrap_or_default())
                 }
                 _ => unimplemented!(),
@@ -87,8 +87,8 @@ mod imp {
 
             match pspec.name() {
                 "model" => obj.model().to_value(),
-                "number" => obj.number().to_value(),
-                _ => unimplemented!(),
+                "number" | "text" => obj.number().to_value(),
+                other => unimplemented!("{other}"),
             }
         }
         fn constructed(&self) {

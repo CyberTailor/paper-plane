@@ -98,7 +98,7 @@ impl ChatListItem {
             self.imp().chat_list_type.get().unwrap().clone(),
             chat.id(),
             !self.is_pinned(),
-            chat.session().client_id(),
+            chat.session().client().id(),
         )
         .await
     }

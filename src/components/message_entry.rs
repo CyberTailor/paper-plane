@@ -219,7 +219,7 @@ impl MessageEntry {
 
     pub(crate) async fn as_markdown(&self) -> Option<FormattedText> {
         let text = self.imp().formatted_text.borrow().clone().map(|f| f.0)?;
-        let client_id = self.chat().unwrap().session().client_id();
+        let client_id = self.chat().unwrap().session().client().id();
 
         functions::parse_markdown(text.clone(), client_id)
             .await

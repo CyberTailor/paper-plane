@@ -17,11 +17,11 @@ use crate::session::content::message_row::MessageBase;
 use crate::session::content::message_row::MessageBaseImpl;
 use crate::session::content::message_row::MessageBubble;
 use crate::tdlib::BoxedMessageContent;
+use crate::tdlib::ClientSession;
 use crate::tdlib::Message;
 use crate::utils::decode_image_from_path;
 use crate::utils::parse_formatted_text;
 use crate::utils::spawn;
-use crate::Session;
 
 mod imp {
     use super::*;
@@ -192,7 +192,7 @@ impl MessagePhoto {
         }
     }
 
-    async fn download_photo(&self, file_id: i32, session: &Session) {
+    async fn download_photo(&self, file_id: i32, session: &ClientSession) {
         match session.download_file(file_id).await {
             Ok(file) => {
                 self.load_photo(file.local.path);

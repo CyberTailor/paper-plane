@@ -1,0 +1,76 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LoginPhoneNumber {
+  layout-manager: BinLayout { };
+
+  Adw.ToolbarView {
+
+    [top]
+    Adw.HeaderBar {
+
+      [start]
+      Button exit_button {
+        action-name: "login.exit";
+        icon-name: "go-previous-symbolic";
+        visible: bind-property exit_button.sensitive;
+      }
+    }
+
+    content: Adw.ToastOverlay toast_overlay {
+
+      Adw.StatusPage {
+        icon-name: "user-available-symbolic";
+        title: _("Welcome");
+        vexpand: true;
+
+        Adw.Clamp {
+          maximum-size: 300;
+          tightening-threshold: 200;
+
+          child: Box {
+            orientation: vertical;
+
+            $PhoneNumberInput input {}
+
+            Button next_button {
+              styles ["suggested-action", "pill"]
+
+              margin-top: 9;
+              margin-start: 12;
+              margin-end: 12;
+              action-name: "login.next";
+
+              child: Stack next_button_stack {
+                StackPage {
+                  name: "label";
+                  child: Label {
+                    label: _("_Next");
+                    use-underline: true;
+                  };
+                }
+                StackPage {
+                  name: "spinner";
+                  child: Spinner {
+                    spinning: true;
+                    vexpand: true;
+                  };
+                }
+              };
+            }
+
+            LinkButton {
+              margin-top: 12;
+              action-name: "login.use-qr-code";
+              label: _("Quick login using QR code");
+            }
+
+            Spinner qr_code_spinner {
+              spinning: false;
+            }
+          };
+        }
+      }
+    };
+  }
+}

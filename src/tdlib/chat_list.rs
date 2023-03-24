@@ -12,6 +12,7 @@ use once_cell::sync::Lazy;
 use tdlib::functions;
 use tdlib::types::ChatPosition as TdChatPosition;
 
+use super::ClientSession;
 use crate::tdlib::Chat;
 use crate::tdlib::ChatListItem;
 use crate::utils::spawn;
@@ -24,6 +25,7 @@ mod imp {
         // order -> item
         pub(super) list: RefCell<BTreeMap<i64, ChatListItem>>,
         pub(super) unread_count: Cell<i32>,
+        pub(super) client_session: glib::WeakRef<ClientSession>,
     }
 
     #[glib::object_subclass]
@@ -36,11 +38,23 @@ mod imp {
     impl ObjectImpl for ChatList {
         fn properties() -> &'static [glib::ParamSpec] {
             static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
-                vec![glib::ParamSpecInt::builder("unread-count")
-                    .read_only()
-                    .build()]
+                vec![
+                    glib::ParamSpecInt::builder("unread-count")
+                        .read_only()
+                        .build(),
+                    glib::ParamSpecObject::builder::<ClientSession>("client-session")
+                        .construct_only()
+                        .build(),
+                ]
             });
             PROPERTIES.as_ref()
+        }
+
+        fn set_property(&self, _id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
+            match pspec.name() {
+                "client-session" => self.client_session.set(value.get().unwrap()),
+                _ => unimplemented!(),
+            }
         }
 
         fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
@@ -48,6 +62,7 @@ mod imp {
 
             match pspec.name() {
                 "unread-count" => obj.unread_count().to_value(),
+                "client-session" => obj.client_session().to_value(),
                 _ => unimplemented!(),
             }
         }
@@ -78,14 +93,22 @@ glib::wrapper! {
         @implements gio::ListModel;
 }
 
+impl From<&ClientSession> for ChatList {
+    fn from(client_session: &ClientSession) -> Self {
+        glib::Object::builder()
+            .property("client-session", client_session)
+            .build()
+    }
+}
+
 impl ChatList {
-    pub(crate) fn new() -> Self {
-        glib::Object::new()
+    pub(crate) fn client_session(&self) -> ClientSession {
+        self.imp().client_session.upgrade().unwrap()
     }
 
-    pub(crate) fn fetch(&self, client_id: i32) {
+    pub(crate) fn fetch(&self) {
         spawn(clone!(@weak self as obj => async move {
-            let result = functions::load_chats(None, 20, client_id).await;
+            let result = functions::load_chats(None, 20, obj.client_session().client().id()).await;
 
             if let Err(err) = result {
                 // Error 404 means that all chats have been loaded
@@ -93,7 +116,7 @@ impl ChatList {
                     log::error!("Received an error for LoadChats: {}", err.code);
                 }
             } else {
-                obj.fetch(client_id);
+                obj.fetch();
             }
         }));
     }

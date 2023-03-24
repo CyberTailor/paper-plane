@@ -1,25 +1,29 @@
-use std::cell::RefCell;
+use std::cell::Cell;
 
 use glib::closure;
 use glib::subclass::InitializingObject;
+use glib::Properties;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use once_cell::sync::Lazy;
 
 use super::avatar_with_selection::AvatarWithSelection;
 use crate::expressions;
+use crate::tdlib::ClientSession;
 use crate::tdlib::User;
-use crate::Session;
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, CompositeTemplate, Properties)]
+    #[properties(wrapper_type = super::SessionEntryRow)]
     #[template(resource = "/app/drey/paper-plane/ui/session-entry-row.ui")]
     pub(crate) struct SessionEntryRow {
-        pub(super) session: RefCell<Option<Session>>,
+        #[property(get, set, construct_only)]
+        pub(super) session: glib::WeakRef<ClientSession>,
+        #[property(get, set, construct_only)]
+        pub(super) hint: Cell<bool>,
         #[template_child]
         pub(super) account_avatar: TemplateChild<AvatarWithSelection>,
         #[template_child]
@@ -50,37 +54,13 @@ mod imp {
 
     impl ObjectImpl for SessionEntryRow {
         fn properties() -> &'static [glib::ParamSpec] {
-            static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
-                vec![
-                    glib::ParamSpecObject::builder::<Session>("session")
-                        .construct_only()
-                        .build(),
-                    glib::ParamSpecBoolean::builder("hint")
-                        .write_only()
-                        .construct_only()
-                        .build(),
-                ]
-            });
-            PROPERTIES.as_ref()
+            Self::derived_properties()
         }
-
-        fn set_property(&self, _id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
-            let obj = self.obj();
-
-            match pspec.name() {
-                "session" => obj.set_session(value.get().unwrap()),
-                "hint" => obj.set_hint(value.get().unwrap()),
-                _ => unimplemented!(),
-            }
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
+            self.derived_set_property(id, value, pspec)
         }
-
-        fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
-            let obj = self.obj();
-
-            match pspec.name() {
-                "session" => obj.session().to_value(),
-                _ => unimplemented!(),
-            }
+        fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+            self.derived_property(id, pspec)
         }
 
         fn constructed(&self) {
@@ -104,14 +84,20 @@ glib::wrapper! {
 }
 
 impl SessionEntryRow {
-    pub(crate) fn new(session: &Session) -> Self {
-        glib::Object::builder().property("session", session).build()
+    pub(crate) fn new(session: &ClientSession, hinted: bool) -> Self {
+        let obj: Self = glib::Object::builder().property("session", session).build();
+        let imp = obj.imp();
+
+        imp.account_avatar.set_selected(hinted);
+        imp.display_name_label
+            .set_css_classes(if hinted { &["bold"] } else { &[] });
+
+        obj
     }
 
     fn setup_expressions(&self) {
         let imp = self.imp();
-        let me_expression =
-            SessionEntryRow::this_expression("session").chain_property::<Session>("me");
+        let me_expression = Self::this_expression("session").chain_property::<ClientSession>("me");
 
         // Bind the name
         expressions::user_display_name(&me_expression).bind(
@@ -123,33 +109,14 @@ impl SessionEntryRow {
         // Bind the username
         let username_expression = me_expression.chain_property::<User>("username");
         username_expression
-            .chain_closure::<String>(closure!(|_: SessionEntryRow, username: String| {
+            .chain_closure::<String>(closure!(|_: Self, username: String| {
                 format!("@{username}")
             }))
             .bind(&*imp.username_label, "label", Some(self));
         username_expression
-            .chain_closure::<bool>(closure!(|_: SessionEntryRow, username: String| {
+            .chain_closure::<bool>(closure!(|_: Self, username: String| {
                 !username.is_empty()
             }))
             .bind(&*imp.username_label, "visible", Some(self));
-    }
-
-    pub(crate) fn session(&self) -> Option<Session> {
-        self.imp().session.borrow().clone()
-    }
-
-    pub(crate) fn set_session(&self, session: Option<Session>) {
-        if self.session() == session {
-            return;
-        }
-        self.imp().session.replace(session);
-        self.notify("session");
-    }
-
-    pub(crate) fn set_hint(&self, hinted: bool) {
-        let imp = self.imp();
-        imp.account_avatar.set_selected(hinted);
-        imp.display_name_label
-            .set_css_classes(if hinted { &["bold"] } else { &[] });
     }
 }

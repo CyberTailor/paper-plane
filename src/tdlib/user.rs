@@ -12,7 +12,7 @@ use tdlib::types::User as TdUser;
 use crate::tdlib::Avatar;
 use crate::tdlib::BoxedUserStatus;
 use crate::tdlib::BoxedUserType;
-use crate::Session;
+use crate::tdlib::ClientSession;
 
 mod imp {
     use super::*;
@@ -27,7 +27,7 @@ mod imp {
         pub(super) phone_number: RefCell<String>,
         pub(super) avatar: RefCell<Option<Avatar>>,
         pub(super) status: RefCell<Option<BoxedUserStatus>>,
-        pub(super) session: WeakRef<Session>,
+        pub(super) session: WeakRef<ClientSession>,
     }
 
     #[glib::object_subclass]
@@ -62,7 +62,7 @@ mod imp {
                     glib::ParamSpecBoxed::builder::<BoxedUserStatus>("status")
                         .read_only()
                         .build(),
-                    glib::ParamSpecObject::builder::<Session>("session")
+                    glib::ParamSpecObject::builder::<ClientSession>("session")
                         .read_only()
                         .build(),
                 ]
@@ -94,7 +94,7 @@ glib::wrapper! {
 }
 
 impl User {
-    pub(crate) fn from_td_object(td_user: TdUser, session: &Session) -> Self {
+    pub(crate) fn from_td_object(td_user: TdUser, session: &ClientSession) -> Self {
         let user: User = glib::Object::new();
         let imp = user.imp();
 
@@ -233,7 +233,7 @@ impl User {
         self.notify("status");
     }
 
-    pub(crate) fn session(&self) -> Session {
+    pub(crate) fn session(&self) -> ClientSession {
         self.imp().session.upgrade().unwrap()
     }
 }

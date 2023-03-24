@@ -23,9 +23,9 @@ use crate::session::content::ChatHistoryRow;
 use crate::session::content::ChatInfoWindow;
 use crate::tdlib::Chat;
 use crate::tdlib::ChatType;
+use crate::tdlib::ClientSession;
 use crate::tdlib::SponsoredMessage;
 use crate::utils::spawn;
-use crate::Session;
 
 const MIN_N_ITEMS: u32 = 20;
 
@@ -249,12 +249,13 @@ impl ChatHistory {
             dialog.set_response_appearance("yes", adw::ResponseAppearance::Destructive);
             let response = dialog.choose_future().await;
             if response == "yes" {
-                let result = functions::leave_chat(chat.id(), chat.session().client_id()).await;
+                let result = functions::leave_chat(chat.id(), chat.session().client().id()).await;
                 if let Err(e) = result {
                     log::warn!("Failed to leave chat: {:?}", e);
                 } else {
                     // Unselect recently left chat
-                    chat.session().imp().sidebar.get().set_selected_chat(None);
+                    // TODO: ?????
+                    // chat.session().imp().sidebar.get().set_selected_chat(None);
                 }
             }
         }
@@ -264,7 +265,12 @@ impl ChatHistory {
         self.root()?.downcast().ok()
     }
 
-    fn request_sponsored_message(&self, session: &Session, chat_id: i64, list: &gio::ListStore) {
+    fn request_sponsored_message(
+        &self,
+        session: &ClientSession,
+        chat_id: i64,
+        list: &gio::ListStore,
+    ) {
         spawn(clone!(@weak session, @weak list => async move {
             match SponsoredMessage::request(chat_id, &session).await {
                 Ok(sponsored_message) => {

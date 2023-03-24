@@ -155,7 +155,7 @@ impl SendPhotoDialog {
 
         let chat = imp.chat.get().unwrap();
         let chat_id = chat.id();
-        let client_id = chat.session().client_id();
+        let client_id = chat.session().client().id();
         let path = imp.path.get().unwrap().clone();
 
         let paintable = imp.picture.paintable().unwrap();

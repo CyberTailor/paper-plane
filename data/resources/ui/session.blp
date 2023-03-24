@@ -8,7 +8,7 @@ template $Session : Adw.Bin {
     $Sidebar sidebar {
       compact: bind leaflet.folded;
       selected-chat: bind-property content.chat bidirectional;
-      session: "Session";
+      session: bind template.model;
     }
 
     Adw.LeafletPage {

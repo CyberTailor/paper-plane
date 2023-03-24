@@ -3,6 +3,7 @@
 #![allow(clippy::format_push_string)]
 
 mod application;
+mod client;
 #[rustfmt::skip]
 #[allow(clippy::all)]
 mod config;
@@ -10,6 +11,7 @@ mod components;
 mod expressions;
 mod i18n;
 mod login;
+mod login2;
 mod phone_number_input;
 mod session;
 mod session_manager;
